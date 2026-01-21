@@ -4,7 +4,10 @@
 #include <stdbool.h>
 #include <string.h>
 typedef enum{
-    TK_INT, TK_RETURN, TK_SEMI, TK_FLOAT, TK_VARIABLE, TK_DIGIT
+    TK_INT, TK_RETURN, TK_SEMI, TK_FLOAT,
+    TK_IDENTIFIER, TK_DIGIT, TK_KEYWORDS, TK_LPAREN,
+    TK_RPAREN, TK_LCURLYB, TK_RCURLYB, TK_RSQUAREB,
+    TK_LSQUAREB, TK_FOR, TK_WHILE, TK_EQUAL, TK_EOF
 } TokenType;
 typedef struct {
     TokenType type;
@@ -34,21 +37,70 @@ char *read_file(const char* path){
     return buffer;
 }
 void printToken(Token token){
-    if (token.type == TK_RETURN){
-        printf("RETURN ");
-    }else if (token.type == TK_VARIABLE){
-        printf("VARIABLE(%s) ", token.value);
-    }else if (token.type == TK_INT){
-        printf("INT(%s) ", token.value);
-    }else if(token.type == TK_DIGIT){
-        printf("DIGIT(%s) ", token.value);
-    }else if(token.type == TK_SEMI){
-        printf("SEMI ");
+    switch (token.type){
+        case (TK_RETURN):
+            printf("RETURN ");
+            break;
+        case (TK_IDENTIFIER):
+            printf("IDENTIFIER(%s) ", token.value);
+            break;
+        case (TK_INT):
+            printf("INT ");
+            break;
+        case (TK_DIGIT):
+            printf("DIGIT(%s) ", token.value);
+            break;
+        case (TK_SEMI):
+            printf("SEMI ");
+            break;
+        case (TK_LPAREN):
+            printf("LPAREN ");
+            break;
+        case (TK_RPAREN):
+            printf("RPAREN ");
+            break;
+        case (TK_LCURLYB):
+            printf("LCURLYB ");
+            break;
+        case (TK_RCURLYB):
+            printf("RCURLYB " );
+            break;
+        case (TK_LSQUAREB):
+            printf("LSQUAREB ");
+            break;
+        case (TK_RSQUAREB):
+            printf("RSQUAREB ");
+            break;
+        case (TK_FOR):
+            printf("FOR ");
+            break;
+        case (TK_WHILE):
+            printf("WHILE ");
+            break;
+        case (TK_FLOAT):
+            printf("FLOAT ");
+            break;
+        case (TK_EQUAL):
+            printf("EQUAL ");
+            break;
+        case (TK_EOF):
+            printf("EOF ");
+            break;
+        default:
+            printf("NOT_IMPLEMENTED ");
     }
 }
 Token get_next_token(char **src){
+    //Skipping spaces
     while(isspace(**src)){
             (*src)++;
+    }
+    //ckecking if end of FILE
+    if (**src == '\0'){
+        Token t;
+        t.type = TK_EOF;
+        t.value = NULL;
+        return t;
     }
 
 
@@ -60,7 +112,7 @@ Token get_next_token(char **src){
     int index = 0;
     bool hasEnded = false;
     bool isADigit = false;
-        //checking if the next token is a variable or a reserved buffer
+    //checking the type of the next token; 
     if (isalpha(current) || current == '_'){
         while (isalnum(**src) || **src == '_'){
             buffer[index++] = **src;
@@ -75,20 +127,49 @@ Token get_next_token(char **src){
     }else if (current == ';'){
         t.type = TK_SEMI;
         (*src)++;
+    }else if (current == '('){
+        t.type = TK_LPAREN;
+        (*src)++;
+    }else if (current == ')'){
+        t.type = TK_RPAREN;
+        (*src)++;
+    }else if (current == '{'){
+        t.type = TK_LCURLYB;
+        (*src)++;
+    }else if (current == '}'){
+        t.type = TK_RCURLYB;
+        (*src)++;
+    }else if (current == '['){
+        t.type = TK_LSQUAREB;
+        (*src)++;
+    }else if (current == ']'){
+        t.type = TK_RSQUAREB;
+        (*src)++;
+    }else if (current == '='){
+        t.type = TK_EQUAL;
+        (*src)++;
     }else{
         (*src)++;
     }
    
     buffer[index] = '\0';
+
+    //Checking for key words
     if (strcmp(buffer, "return") == 0){
         t.type = TK_RETURN; 
-        t.value = strdup(buffer);
     }else if(strcmp(buffer, "int") == 0){
         t.type = TK_INT;
     }else if(strcmp(buffer, "float") == 0){
         t.type = TK_FLOAT;
+    }else if (strcmp(buffer, "for") == 0){
+        t.type = TK_FOR;
+    }else if (strcmp(buffer, "while") == 0){
+        t.type = TK_WHILE;
     }else if(isADigit){
         t.type = TK_DIGIT;
+        t.value = strdup(buffer);
+    }else if(isalpha(buffer[0])){
+        t.type = TK_IDENTIFIER;
         t.value = strdup(buffer);
     }
     return t;
