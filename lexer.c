@@ -1,18 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdbool.h>
-#include <string.h>
-typedef enum{
-    TK_INT, TK_RETURN, TK_SEMI, TK_FLOAT,
-    TK_IDENTIFIER, TK_DIGIT, TK_KEYWORDS, TK_LPAREN,
-    TK_RPAREN, TK_LCURLYB, TK_RCURLYB, TK_RSQUAREB,
-    TK_LSQUAREB, TK_FOR, TK_WHILE, TK_EQUAL, TK_EOF
-} TokenType;
-typedef struct {
-    TokenType type;
-    char* value;
-} Token;
+#include "lexer.h"
+
 char *read_file(const char* path){
     FILE *file = fopen(path, "rb");
     if (!file){
@@ -86,6 +73,15 @@ void printToken(Token token){
         case (TK_EOF):
             printf("EOF ");
             break;
+        case (TK_IF):
+            printf("IF ");
+            break;
+        case (TK_ELSE):
+            printf("ELSE ");
+            break;
+        case (TK_NOT):
+            printf("NOT ");
+            break;
         default:
             printf("NOT_IMPLEMENTED ");
     }
@@ -148,6 +144,9 @@ Token get_next_token(char **src){
     }else if (current == '='){
         t.type = TK_EQUAL;
         (*src)++;
+    }else if (current == '!'){
+        t.type = TK_NOT;
+        (*src)++;
     }else{
         (*src)++;
     }
@@ -165,6 +164,10 @@ Token get_next_token(char **src){
         t.type = TK_FOR;
     }else if (strcmp(buffer, "while") == 0){
         t.type = TK_WHILE;
+    }else if (strcmp(buffer, "if") == 0){
+        t.type = TK_IF;
+    }else if (strcmp(buffer, "while") == 0){
+        t.type = TK_WHILE;
     }else if(isADigit){
         t.type = TK_DIGIT;
         t.value = strdup(buffer);
@@ -174,11 +177,4 @@ Token get_next_token(char **src){
     }
     return t;
 }
-int main(){
-    char* buffer = read_file("text.txt");
-    while(*buffer != '\0'){
-        Token token = get_next_token(&buffer);
-        printToken(token);;
-    }
-    return 0;
-}
+
